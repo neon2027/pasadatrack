@@ -2,7 +2,7 @@ import { usePage } from "@inertiajs/react";
 import { Pencil } from "lucide-react";
 import AdminWorkspace from "@/components/admin-workspace";
 import { OperationsForm, RecordTable, Status } from "@/components/operations-workspace";
-import type { Field } from "@/components/operations-workspace";
+import type { Field, FieldGroup } from "@/components/operations-workspace";
 import { Button } from "@/components/ui/button";
 import * as roles from "@/routes/admin/roles";
 type Role = {
@@ -18,13 +18,32 @@ const label = (permission: string) =>
         .replaceAll("-", " ")
         .replace(":", " · ")
         .replace(/\b\w/g, (letter) => letter.toUpperCase());
+const permissionLabel = (permission: string) =>
+    ({
+        "attendance-devices:manage": "Manage devices",
+        "payment:reverse": "Reverse payments",
+        "team:update": "Edit team settings",
+        "team:delete": "Delete team",
+        "member:update": "Change member roles",
+        "member:remove": "Remove members",
+        "invitation:create": "Invite members",
+        "invitation:cancel": "Cancel invitations",
+    })[permission] ??
+    (permission.endsWith(":view")
+        ? "View"
+        : permission.endsWith(":manage")
+          ? "Manage"
+          : permission.endsWith(":export")
+            ? "Export"
+            : label(permission));
 export default function Roles(props: Props) {
     const canChange = !usePage().props.auth.requiresGoogleConfirmation;
     const fields: Field[] = [
         { name: "name", label: "Role name", required: true },
         ...props.catalog.map((permission) => ({
             name: permission,
-            label: label(permission),
+            label: permissionLabel(permission),
+            accessibleLabel: label(permission),
             type: "checkbox",
             defaultValue: false,
             help: props.dependencies[permission]
@@ -33,6 +52,24 @@ export default function Roles(props: Props) {
         })),
         { name: "reason", label: "Reason for this change", type: "textarea", required: true },
     ];
+    const fieldGroups: FieldGroup[] = [
+        { title: "Fleet", prefixes: ["fleet"] },
+        { title: "Scheduling", prefixes: ["scheduling"] },
+        { title: "Collections & payments", prefixes: ["collections", "payment"] },
+        { title: "Attendance", prefixes: ["attendance", "attendance-devices"] },
+        { title: "Reports", prefixes: ["reports"] },
+        { title: "Audit history", prefixes: ["audit"] },
+        { title: "Team settings", prefixes: ["team"] },
+        { title: "Members", prefixes: ["member"] },
+        { title: "Invitations", prefixes: ["invitation"] },
+    ]
+        .map((group) => ({
+            title: group.title,
+            fields: props.catalog.filter((permission) =>
+                group.prefixes.includes(permission.split(":")[0]),
+            ),
+        }))
+        .filter((group) => group.fields.length > 0);
     const transform = (data: Record<string, string | boolean>) => ({
         name: data.name,
         reason: data.reason,
@@ -49,6 +86,7 @@ export default function Roles(props: Props) {
                         title="Create team role"
                         description="Choose only the permissions this role needs. Manage permissions require their corresponding View permission."
                         fields={fields}
+                        fieldGroups={fieldGroups}
                         action={roles.store()}
                         transform={transform}
                         saveLabel="Create role"
@@ -82,6 +120,7 @@ export default function Roles(props: Props) {
                         <td>
                             {!role.is_owner && canChange && (
                                 <OperationsForm
+                                    key={JSON.stringify(role)}
                                     title="Edit team role"
                                     description="These changes affect every team using this shared role. Owner permissions cannot be edited."
                                     initial={{
@@ -99,10 +138,12 @@ export default function Roles(props: Props) {
                                         {
                                             name: "is_archived",
                                             label: "Archive role",
+                                            help: "Stop new assignments. Existing members keep their access.",
                                             type: "checkbox",
                                             defaultValue: false,
                                         },
                                     ]}
+                                    fieldGroups={fieldGroups}
                                     action={roles.update(role.id)}
                                     transform={transform}
                                     trigger={
