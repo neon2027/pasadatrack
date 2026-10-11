@@ -1,0 +1,25 @@
+PASADATRACK — SUGGESTED CAROUSEL CAPTION
+
+Your next pasada, better organized.
+
+I’m building PasadaTrack for jeepney operators and transport cooperatives — a workspace for drivers, jeepneys, routes, shift scheduling, attendance, boundary collections, reports, and audit history.
+
+Swipe through for a look at the interface and the guided onboarding experience.
+
+Interested in using it for your operation? Email lustanexequiel@gmail.com to discuss your requirements and negotiate pricing.
+
+The fleet-map showcase uses sample positions. Live GPS and physical terminal connectivity require compatible hardware and production integration.
+
+#PasadaTrack #Jeepney #TransportCooperative #FleetManagement #Laravel #React #BuildInPublic
+
+SHORT CAPTION
+
+Less paperwork. More perspective. Meet PasadaTrack — built around the everyday pasada. For requirements and pricing negotiation: lustanexequiel@gmail.com.
+
+CAROUSEL ORDER
+
+01 — Your next pasada, better organized.
+02 — Demo fleet-map overview.
+03 — Role-aware, step-by-step onboarding.
+04 — The everyday operational essentials.
+05 — Email for a requirements discussion and pricing negotiation.

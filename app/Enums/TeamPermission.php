@@ -4,6 +4,9 @@ namespace App\Enums;
 
 enum TeamPermission: string
 {
+    case ManageOperations = 'operations:manage';
+    case ReversePayment = 'payment:reverse';
+
     case UpdateTeam = 'team:update';
     case DeleteTeam = 'team:delete';
 

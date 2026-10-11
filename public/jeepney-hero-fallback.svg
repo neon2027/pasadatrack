@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" fill="none">
+  <defs>
+    <linearGradient id="chrome" x1="0" y1="0" x2="0.6" y2="1"><stop stop-color="#fff"/><stop offset=".48" stop-color="#d5e4e8"/><stop offset="1" stop-color="#94afb8"/></linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#189c92"/><stop offset="1" stop-color="#076861"/></linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe38b"/><stop offset="1" stop-color="#e6b53e"/></linearGradient>
+    <filter id="shadow" x="-.4" y="-.5" width="1.8" height="2"><feGaussianBlur stdDeviation="12"/></filter>
+    <g id="jeep">
+      <ellipse cx="5" cy="155" rx="153" ry="30" fill="#102d3a" opacity=".13" filter="url(#shadow)"/>
+      <path d="M-147 23-32-44 114 37 0 109Z" fill="url(#chrome)"/>
+      <path d="M-147-96-32-158 87-91-27-26Z" fill="url(#chrome)"/>
+      <path d="M-147-96-27-26-27 109-147 40Z" fill="var(--body-paint)"/>
+      <path d="M-27-26 87-91 87 15 41 42 41 77-27 116Z" fill="var(--body-paint)"/>
+      <path d="M-147 9-27 78-27 90-147 21Z" fill="#ffd35b"/>
+      <path d="M-147 38-27 107-27 121-147 51Z" fill="url(#chrome)"/>
+      <g fill="#193d49" stroke="#d4e3e6" stroke-width="4" stroke-linejoin="round">
+        <path d="M-136-75-115-63-115-16-136-28Z"/><path d="M-107-58-86-46-86 1-107-11Z"/>
+        <path d="M-78-41-57-29-57 18-78 6Z"/><path d="M-49-24-32-14-32 32-49 22Z"/>
+        <path d="M-18-18 26-43 26 7-18 32Z"/><path d="M35-48 78-72 78-22 35 2Z"/>
+      </g>
+      <path d="M-26 45 86-20 145 14 32 80Z" fill="url(#chrome)"/>
+      <path d="M-26 51 32 85 32 131-26 98Z" fill="var(--body-paint)"/>
+      <path d="M32 85 145 20 145 66 32 131Z" fill="var(--body-paint)"/>
+      <path d="M37 128 149 63 151 79 40 144-30 104-30 90Z" fill="url(#chrome)"/>
+      <path d="M67 84 111 59 111 101 67 126Z" fill="url(#chrome)"/>
+      <g stroke="#193d49" stroke-width="4"><path d="M75 86v29m9-34v29m9-34v29m9-34v29"/></g>
+      <g fill="#fff2c7" stroke="#d4e3e6" stroke-width="4"><ellipse cx="52" cy="109" rx="8" ry="11" transform="rotate(25 52 109)"/><ellipse cx="129" cy="65" rx="8" ry="11" transform="rotate(25 129 65)"/></g>
+      <g fill="#172d35" stroke="#8ea8b0" stroke-width="3"><ellipse cx="-113" cy="61" rx="18" ry="27" transform="rotate(-25 -113 61)"/><ellipse cx="-10" cy="121" rx="18" ry="27" transform="rotate(-25 -10 121)"/></g>
+      <g fill="url(#chrome)"><ellipse cx="-114" cy="61" rx="10" ry="17" transform="rotate(-25 -114 61)"/><ellipse cx="-11" cy="121" rx="10" ry="17" transform="rotate(-25 -11 121)"/></g>
+      <g stroke="#9eb7bf" stroke-width="5" stroke-linejoin="round"><path d="M-139-110-33-168 77-106M-139-110v14m106-72v14m110 48v14"/><path d="M-119-121-8-58m-77-83L27-79m-74-81L64-100"/></g>
+      <path d="M-11-39 51-74 51-55-11-20Z" fill="url(#chrome)"/><path d="M-4-37 44-64v8L-4-29Z" fill="#ffd35b"/>
+    </g>
+  </defs>
+  <path d="m95 359 314-180 304 177-314 181Z" fill="#eaf2f6"/>
+  <g transform="translate(508 253) scale(.87)" style="--body-paint:url(#yellow)"><use href="#jeep"/></g>
+  <g transform="translate(315 365) scale(1.15)" style="--body-paint:url(#teal)"><use href="#jeep"/></g>
+</svg>

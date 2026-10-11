@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
 @import 'tw-animate-css';
+@import 'leaflet/dist/leaflet.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -62,6 +63,9 @@
 }
 
 :root {
+    --scrollbar-thumb: var(--muted-foreground);
+    --scrollbar-track: var(--muted);
+    --scrollbar-hover: var(--foreground);
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -95,6 +99,39 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
+}
+
+* {
+    scrollbar-width: auto;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+*::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+*::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 3px solid var(--scrollbar-track);
+    border-radius: 6px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-hover);
+}
+@media (forced-colors: active) {
+    * {
+        scrollbar-color: auto;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    [data-slot='dialog-content'],
+    [data-slot='dialog-overlay'],
+    [data-slot='select-content'] {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 .dark {
@@ -132,6 +169,111 @@
     --sidebar-ring: oklch(0.439 0 0);
 }
 
+.fleet-map .leaflet-container {
+    font-family: var(--font-sans);
+    background: var(--muted);
+}
+
+.fleet-map .fleet-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #115e59;
+    color: #fff;
+    box-shadow: 0 2px 6px #0003;
+}
+
+.fleet-map .fleet-marker svg {
+    width: 34px;
+    height: 28px;
+}
+
+.fleet-map .fleet-marker--stale {
+    background: #525252;
+    border-style: dashed;
+}
+
+.fleet-map .fleet-marker--selected {
+    outline: 3px solid #0d9488;
+    outline-offset: 2px;
+}
+
+.fleet-map .fleet-marker-wrapper:focus-visible {
+    border-radius: 50%;
+    outline: 3px solid var(--foreground);
+    outline-offset: 3px;
+}
+
+.fleet-map .fleet-vehicle-popover {
+    width: 280px;
+    max-width: calc(100vw - 48px);
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--popover);
+    color: var(--popover-foreground);
+    box-shadow: 0 4px 16px #0002;
+    white-space: normal;
+    cursor: default;
+}
+
+.fleet-map .fleet-vehicle-popover.leaflet-tooltip-right::before {
+    border-right-color: var(--popover);
+}
+
+.fleet-map .fleet-vehicle-popover.leaflet-tooltip-left::before {
+    border-left-color: var(--popover);
+}
+
+.fleet-map .fleet-popover-title {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.fleet-map .fleet-popover-status {
+    margin: 4px 0 12px;
+    color: var(--muted-foreground);
+    font-size: 12px;
+}
+
+.fleet-map .fleet-vehicle-popover dl {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.fleet-map .fleet-vehicle-popover dl > div {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+}
+
+.fleet-map .fleet-vehicle-popover dt {
+    color: var(--muted-foreground);
+}
+
+.fleet-map .fleet-vehicle-popover dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.fleet-map .leaflet-control-zoom a {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+}
+
+.fleet-map .leaflet-control-attribution {
+    max-width: 100%;
+}
+
 @layer base {
     * {
         @apply border-border;
@@ -139,5 +281,32 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+.marketing-page {
+    --pt-cloud: #edf3f4;
+    --pt-ink: #102d3a;
+    --pt-line: #dce5e8;
+    --pt-muted: #506875;
+    --pt-paper: #fbfcfc;
+    --pt-teal: #087f79;
+    --pt-yellow: #ffd35b;
+}
+
+html:has(.marketing-page) {
+    scroll-behavior: smooth;
+    scrollbar-color: #94aeb6 #fbfcfc;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html:has(.marketing-page) {
+        scroll-behavior: auto;
+    }
+}
+
+@media (forced-colors: active) {
+    html:has(.marketing-page) {
+        scrollbar-color: auto;
     }
 }

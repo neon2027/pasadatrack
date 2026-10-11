@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PasadaTrack — Social showcase</title>
+    <style>
+        @font-face{font-family:Instrument;src:url('./assets/font-regular.woff2') format('woff2');font-weight:400;font-display:block}
+        @font-face{font-family:Instrument;src:url('./assets/font-medium.woff2') format('woff2');font-weight:500 700;font-display:block}
+        *{box-sizing:border-box}html,body{margin:0;width:1080px;background:#edf3f4;color:#102d3a;font-family:Instrument,Arial,sans-serif}
+        .card{width:1080px;height:1350px;padding:60px 64px;display:flex;flex-direction:column;overflow:hidden;background:#fbfcfc;position:relative}
+        .card::before{content:'';position:absolute;left:0;top:0;width:1080px;height:6px;background:#087f79}
+        header{display:flex;align-items:center;justify-content:space-between;gap:30px;min-height:52px}
+        .brand{width:310px;height:62px}.issue{font-size:18px;letter-spacing:.12em;color:#506875}.issue b{font-weight:500;color:#087f79;margin-left:20px}
+        .intro{padding-top:36px}.eyebrow{font-size:19px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#087f79;margin:0 0 20px}
+        h1{font-size:64px;line-height:1.08;letter-spacing:-.052em;font-weight:500;margin:0;max-width:930px}h1 span{color:#087f79}
+        .summary{font-size:23px;line-height:1.5;color:#506875;max-width:850px;margin:20px 0 0}
+        .devices{position:relative;height:750px;flex:none;margin-top:30px}
+        .desktop{position:absolute;left:0;top:0;width:858px;height:562px;border:10px solid #173943;border-bottom-width:16px;border-radius:20px;background:#fbfcfc;box-shadow:0 25px 70px -32px #102d3a70;overflow:hidden}
+        .bar{height:34px;background:#edf3f4;border-bottom:1px solid #dce5e8;display:flex;align-items:center;padding:0 18px;gap:7px;font-size:12px;color:#506875;letter-spacing:.03em}
+        .bar i{display:block;width:6px;height:6px;border-radius:50%;background:#a9bdc5}.bar span{margin-left:12px}
+        .desktop img{display:block;width:100%;height:502px;object-fit:contain;background:#fbfcfc}.dark-shot .desktop img{background:#0a0a0a}
+        .base{position:absolute;left:-20px;top:554px;width:898px;height:27px;background:linear-gradient(#d5e1e6,#a8bdc7);border-radius:2px 2px 45px 45px;box-shadow:0 18px 35px -10px #102d3a35}
+        .base::before{content:'';position:absolute;width:125px;height:9px;top:0;left:386px;border-radius:0 0 12px 12px;background:#8da4af}
+        .device-label{position:absolute;left:8px;top:602px;color:#506875;font-size:18px;letter-spacing:.12em;text-transform:uppercase}
+        .phone{position:absolute;right:0;top:186px;width:270px;height:556px;border:8px solid #173943;border-radius:42px;background:#173943;box-shadow:0 26px 55px -25px #102d3a90;overflow:hidden}
+        .phone-inner{position:absolute;inset:0;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;background:#fbfcfc}
+        .status{height:28px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 17px;font-size:11px;font-weight:500;position:relative;color:#102d3a}
+        .status::after{content:'';position:absolute;left:50%;top:6px;transform:translateX(-50%);width:63px;height:14px;background:#173943;border-radius:20px}
+        .phone img{display:block;width:100%;height:512px;object-fit:cover;object-position:top;background:#fbfcfc}.dark-shot .phone img,.dark-shot .status{background:#0a0a0a;color:#fff}
+        .dark-shot .phone img{object-fit:contain}.phone::after{content:'';position:absolute;bottom:4px;left:90px;width:72px;height:4px;border-radius:20px;background:#173943}.dark-shot .phone::after{background:#dce5e8}
+        footer{margin-top:auto;padding-top:25px;display:flex;justify-content:space-between;align-items:flex-end;gap:25px;border-top:1px solid #dce5e8}
+        footer p{font-size:18px;line-height:1.6;color:#506875;margin:0;max-width:560px}footer strong{font-size:20px;font-weight:500;color:#087f79;white-space:nowrap}.pricing footer strong{font-size:25px}
+        .features footer{padding-top:20px}
+    </style>
+</head>
+<body>
+    <article class="card" id="card">
+        <header>
+            <svg class="brand" viewBox="139 205 1960 388" aria-label="PasadaTrack"><image href="./assets/brand.png" width="2172" height="724" /></svg>
+            <div class="issue">DESKTOP + MOBILE <b id="number"></b></div>
+        </header>
+        <div class="intro">
+            <p class="eyebrow" id="eyebrow"></p>
+            <h1 id="headline"></h1>
+            <p class="summary" id="summary"></p>
+        </div>
+        <div class="devices">
+            <div class="desktop">
+                <div class="bar"><i></i><i></i><i></i><span id="screen-title"></span></div>
+                <img id="screenshot" alt="Actual desktop screenshot of PasadaTrack">
+            </div>
+            <div class="base"></div>
+            <div class="device-label">Desktop workspace</div>
+            <div class="phone"><div class="phone-inner">
+                <div class="status"><span>9:41</span><span>▮▮▮ ▰</span></div>
+                <img id="mobile-screenshot" alt="Actual mobile screenshot of PasadaTrack">
+            </div></div>
+        </div>
+        <footer><p id="note"></p><strong id="contact"></strong></footer>
+    </article>
+    <script>
+        const slides = [
+            {className:'hero',eyebrow:'Built for the everyday pasada',headline:'Your next pasada.<br><span>Better organized.</span>',summary:'One workspace for the drivers, shifts, and collections that keep your operation moving.',image:'01-welcome.jpg',screen:'PasadaTrack · Welcome',tags:['Fleet & routes','Attendance','Boundary collections'],note:'For jeepney operators and transport cooperatives.',contact:'Let’s talk about your fleet.'},
+            {className:'compact dark-shot',eyebrow:'See the bigger picture',headline:'Your fleet.<br><span>One clear overview.</span>',summary:'Explore the map, search the demo fleet, and review vehicle and driver details in one view.',image:'02-fleet-map.jpg',screen:'PasadaTrack · Demo fleet map',tags:['Vehicle details','Search & filters','Map overview'],note:'Demo map · © OpenStreetMap contributors. Live GPS requires supported hardware and production integration.',contact:'Built for the road ahead.'},
+            {className:'compact dark-shot',eyebrow:'A confident first step',headline:'A clear workflow.<br><span>From day one.</span>',summary:'A guided introduction to your workspace, with steps tailored to your team role.',image:'03-onboarding.jpg',screen:'PasadaTrack · Quick guide',tags:['Step-by-step tutorial','Role-aware guide','Revisit anytime'],note:'Learn where to begin, then open the section you need. The guide does not change operational records.',contact:'Less guesswork. More clarity.'},
+            {className:'compact features',eyebrow:'The everyday essentials',headline:'Less paperwork.<br><span>More perspective.</span>',summary:'Connect your fleet, schedules, collections, attendance, reports, and audit history.',image:'04-features.jpg',screen:'PasadaTrack · Features',tags:[],note:'Plan the day. Record the shift. Reconcile the collections.',contact:'One connected workspace.'},
+            {className:'compact pricing',eyebrow:'Let’s build around your operation',headline:'Your fleet.<br><span>Let’s talk.</span>',summary:'Discuss your requirements and negotiate pricing for your operation directly by email.',image:'05-pricing.jpg',screen:'PasadaTrack · Pricing inquiry',tags:['Requirements discussion','Pricing negotiation'],note:'Live GPS and terminal connectivity require compatible hardware and setup.',contact:'lustanexequiel@gmail.com'},
+        ];
+        const index=Math.max(0,Math.min(4,Number(new URLSearchParams(location.search).get('slide')||1)-1));
+        const slide=slides[index];
+        document.querySelector('#card').className='card '+slide.className;
+        document.querySelector('#number').textContent=String(index+1).padStart(2,'0')+' / 05';
+        document.querySelector('#eyebrow').textContent=slide.eyebrow;
+        document.querySelector('#headline').innerHTML=slide.headline;
+        document.querySelector('#summary').textContent=slide.summary;
+        document.querySelector('#screenshot').src='./screenshots/'+slide.image;
+        document.querySelector('#mobile-screenshot').src='./screenshots/mobile/'+slide.image;
+        document.querySelector('#screen-title').textContent=slide.screen;
+        document.querySelector('#note').textContent=slide.note;
+        document.querySelector('#contact').textContent=slide.contact;
+    </script>
+</body>
+</html>
