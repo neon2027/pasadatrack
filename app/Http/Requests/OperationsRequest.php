@@ -15,8 +15,10 @@ abstract class OperationsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->hasTeamPermission($this->team(), TeamPermission::ManageOperations) ?? false;
+        return $this->user()?->hasTeamPermission($this->team(), $this->permission()) ?? false;
     }
+
+    abstract protected function permission(): TeamPermission;
 
     public function team(): Team
     {

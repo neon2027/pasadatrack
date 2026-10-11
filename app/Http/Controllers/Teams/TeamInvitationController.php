@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Teams;
 
+use App\Actions\Admin\ManageUsers;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\CreateTeamInvitationRequest;
 use App\Http\Requests\Teams\RespondToTeamInvitationRequest;
 use App\Models\Team;
+use App\Models\TeamAccessRole;
 use App\Models\TeamInvitation;
 use App\Notifications\Teams\TeamInvitation as TeamInvitationNotification;
 use Illuminate\Http\RedirectResponse;
@@ -20,16 +22,20 @@ class TeamInvitationController extends Controller
     /**
      * Store a newly created invitation.
      */
-    public function store(CreateTeamInvitationRequest $request, Team $team): RedirectResponse
+    public function store(CreateTeamInvitationRequest $request, Team $team, ManageUsers $users): RedirectResponse
     {
-        Gate::authorize('inviteMember', $team);
+        $invitation = DB::transaction(function () use ($request, $team, $users): TeamInvitation {
+            $users->lockSecurity();
+            $actor = $request->user()->fresh();
+            Gate::forUser($actor)->authorize('inviteMember', $team);
+            $role = TeamAccessRole::query()->where('key', $request->validated('role'))->firstOrFail();
+            abort_unless($actor->canAssignTeamRole($team, $role), 403);
 
-        $invitation = $team->invitations()->create([
-            'email' => $request->validated('email'),
-            'role' => TeamRole::from($request->validated('role')),
-            'invited_by' => $request->user()->id,
-            'expires_at' => now()->addDays(3),
-        ]);
+            return $team->invitations()->create([
+                'email' => $request->validated('email'), 'role' => TeamRole::tryFrom($role->key) ?? TeamRole::Member,
+                'team_access_role_id' => $role->id, 'invited_by' => $actor->id, 'expires_at' => now()->addDays(3),
+            ]);
+        }, 3);
 
         Notification::route('mail', $invitation->email)
             ->notify(new TeamInvitationNotification($invitation));
@@ -58,16 +64,20 @@ class TeamInvitationController extends Controller
     /**
      * Accept the invitation.
      */
-    public function accept(RespondToTeamInvitationRequest $request, TeamInvitation $invitation): RedirectResponse
+    public function accept(RespondToTeamInvitationRequest $request, TeamInvitation $invitation, ManageUsers $users): RedirectResponse
     {
         $user = $request->user();
 
-        DB::transaction(function () use ($user, $invitation) {
+        DB::transaction(function () use ($user, $invitation, $users) {
+            $users->lockSecurity();
+            $invitation = TeamInvitation::query()->lockForUpdate()->findOrFail($invitation->id);
+            abort_unless($invitation->isPending(), 403);
+            abort_unless($user->fresh()->isActive() && $invitation->accessRole && ! $invitation->accessRole->is_archived && ! $invitation->accessRole->is_owner, 403);
             $team = $invitation->team;
 
             $team->memberships()->firstOrCreate(
                 ['user_id' => $user->id],
-                ['role' => $invitation->role],
+                ['role' => $invitation->role, 'team_access_role_id' => $invitation->team_access_role_id],
             );
 
             $invitation->update(['accepted_at' => now()]);

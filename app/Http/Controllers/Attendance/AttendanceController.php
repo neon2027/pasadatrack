@@ -22,6 +22,7 @@ class AttendanceController extends Controller
         $filters = $request->validate(['date' => ['nullable', 'date_format:Y-m-d'], 'driver_id' => ['nullable', 'integer']]);
 
         return Inertia::render('attendance/index', [
+            'canManageDevices' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageDevices),
             'sessions' => AttendanceSession::forTeam($current_team)->with(['driver', 'corrections.correctedBy'])
                 ->when($filters['driver_id'] ?? null, fn ($query, $id) => $query->where('driver_id', $id))
                 ->when($filters['date'] ?? null, fn ($query, $date) => $query->where('in_at', '>=', OperationsTime::utc($date.'T00:00'))->where('in_at', '<', OperationsTime::utc($date.'T00:00')->addDay()))
@@ -31,7 +32,7 @@ class AttendanceController extends Controller
                     'corrections' => $session->corrections->map(fn ($correction): array => ['reason' => $correction->reason, 'actor' => $correction->correctedBy->name])->all(),
                 ]),
             'drivers' => Driver::forTeam($current_team)->orderBy('name')->get(['id', 'name']),
-            'filters' => $filters, 'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations),
+            'filters' => $filters, 'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageAttendance),
         ]);
     }
 

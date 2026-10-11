@@ -26,7 +26,7 @@ class TeamTest extends TestCase
 
     public function test_teams_can_be_created()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['privilege_level_id' => 2]);
 
         $response = $this
             ->actingAs($user)
@@ -44,7 +44,7 @@ class TeamTest extends TestCase
 
     public function test_team_slug_uses_next_available_suffix()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['privilege_level_id' => 2]);
 
         Team::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
         Team::factory()->create(['name' => 'Acme One', 'slug' => 'acme-1']);

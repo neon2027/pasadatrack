@@ -37,24 +37,22 @@ class RegistrationTest extends TestCase
 
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
-            ->component('auth/register')
+            ->component('auth/login')
             ->where('teamInvitation.code', $invitation->code)
             ->where('teamInvitation.teamName', 'Laravel Team'),
         );
     }
 
-    public function test_new_users_can_register()
+    public function test_password_registration_is_not_available(): void
     {
-        $response = $this->post(route('register.store'), [
+        $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-        ]);
+        ])->assertStatus(405);
 
-        $this->assertAuthenticated();
-
-        $user = User::where('email', 'test@example.com')->first();
-        $response->assertRedirect(route('dashboard'));
+        $this->assertGuest();
+        $this->assertDatabaseCount('users', 0);
     }
 }

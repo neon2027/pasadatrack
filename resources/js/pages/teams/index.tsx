@@ -1,30 +1,39 @@
-import { Head, Link } from '@inertiajs/react';
-import { Eye, LogOut, Pencil, Plus } from 'lucide-react';
-import { useState } from 'react';
-import CreateTeamModal from '@/components/create-team-modal';
-import Heading from '@/components/heading';
-import LeaveTeamModal from '@/components/leave-team-modal';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { edit, index } from '@/routes/teams';
-import type { Team } from '@/types';
+import { Head, Link, usePage } from "@inertiajs/react";
+
+import { Eye, LogOut, Pencil, Plus } from "lucide-react";
+
+import { useState } from "react";
+
+import CreateTeamModal from "@/components/create-team-modal";
+
+import Heading from "@/components/heading";
+
+import LeaveTeamModal from "@/components/leave-team-modal";
+
+import { Badge } from "@/components/ui/badge";
+
+import { Button } from "@/components/ui/button";
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+import { edit, index } from "@/routes/teams";
+
+import type { Team } from "@/types";
 
 type Props = {
     teams: Team[];
 };
 
 export default function TeamsIndex({ teams }: Props) {
+    const { teamQuota } = usePage().props;
+
     const [leaveTeamDialogOpen, setLeaveTeamDialogOpen] = useState(false);
+
     const [teamLeaving, setTeamLeaving] = useState<Team | null>(null);
 
     const openLeaveTeamDialog = (team: Team) => {
         setTeamLeaving(team);
+
         setLeaveTeamDialogOpen(true);
     };
 
@@ -38,7 +47,9 @@ export default function TeamsIndex({ teams }: Props) {
                 <div className="flex items-center justify-between">
                     <Heading
                         variant="small"
+
                         title="Teams"
+
                         description="Manage your teams and team memberships"
                     />
 
@@ -49,27 +60,32 @@ export default function TeamsIndex({ teams }: Props) {
                     </CreateTeamModal>
                 </div>
 
+                {teamQuota && (
+                    <p className="rounded-lg border p-4 text-sm">
+                        {teamQuota.level} · {teamQuota.owned} / {teamQuota.limit} owned teams,
+                        including your personal team.
+                        {!teamQuota.canCreate &&
+                            " Ask an administrator to upgrade your level to create another team."}
+                    </p>
+                )}
                 <div className="space-y-3">
                     {teams.map((team) => {
-                        const canLeaveTeam =
-                            !team.isPersonal && team.role !== 'owner';
+                        const canLeaveTeam = !team.isPersonal && team.role !== "owner";
 
                         return (
                             <div
                                 key={team.id}
+
                                 data-test="team-row"
+
                                 className="flex items-center justify-between gap-4 rounded-lg border p-4"
                             >
                                 <div className="flex items-center gap-4">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-medium">
-                                                {team.name}
-                                            </span>
+                                            <span className="font-medium">{team.name}</span>
                                             {team.isPersonal ? (
-                                                <Badge variant="secondary">
-                                                    Personal
-                                                </Badge>
+                                                <Badge variant="secondary">Personal</Badge>
                                             ) : null}
                                         </div>
                                         <span className="text-sm text-muted-foreground">
@@ -85,13 +101,12 @@ export default function TeamsIndex({ teams }: Props) {
                                                 <TooltipTrigger asChild>
                                                     <Button
                                                         variant="ghost"
+
                                                         size="sm"
+
                                                         data-test="team-leave-button"
-                                                        onClick={() =>
-                                                            openLeaveTeamDialog(
-                                                                team,
-                                                            )
-                                                        }
+
+                                                        onClick={() => openLeaveTeamDialog(team)}
                                                     >
                                                         <LogOut className="h-4 w-4" />
                                                     </Button>
@@ -102,20 +117,19 @@ export default function TeamsIndex({ teams }: Props) {
                                             </Tooltip>
                                         ) : null}
 
-                                        {team.role === 'member' ? (
+                                        {team.role === "member" ? (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <Button
                                                         variant="ghost"
+
                                                         size="sm"
+
                                                         data-test="team-view-button"
+
                                                         asChild
                                                     >
-                                                        <Link
-                                                            href={edit(
-                                                                team.slug,
-                                                            )}
-                                                        >
+                                                        <Link href={edit(team.slug)}>
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
@@ -129,15 +143,14 @@ export default function TeamsIndex({ teams }: Props) {
                                                 <TooltipTrigger asChild>
                                                     <Button
                                                         variant="ghost"
+
                                                         size="sm"
+
                                                         data-test="team-edit-button"
+
                                                         asChild
                                                     >
-                                                        <Link
-                                                            href={edit(
-                                                                team.slug,
-                                                            )}
-                                                        >
+                                                        <Link href={edit(team.slug)}>
                                                             <Pencil className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
@@ -163,7 +176,9 @@ export default function TeamsIndex({ teams }: Props) {
 
             <LeaveTeamModal
                 team={teamLeaving}
+
                 open={leaveTeamDialogOpen}
+
                 onOpenChange={setLeaveTeamDialogOpen}
             />
         </>
@@ -173,7 +188,8 @@ export default function TeamsIndex({ teams }: Props) {
 TeamsIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Teams',
+            title: "Teams",
+
             href: index(),
         },
     ],

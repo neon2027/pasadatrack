@@ -1,10 +1,10 @@
-import { InfoIcon } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import type { TeamInvitationContext } from '@/types';
+import { InfoIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { TeamInvitationContext } from "@/types";
 
 type Props = {
     invitation: TeamInvitationContext;
-    action: 'Log in' | 'Register';
+    action: "Sign in";
 };
 
 export default function TeamInvitationAlert({ invitation, action }: Props) {

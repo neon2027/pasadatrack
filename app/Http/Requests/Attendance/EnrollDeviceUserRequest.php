@@ -2,12 +2,18 @@
 
 namespace App\Http\Requests\Attendance;
 
+use App\Enums\TeamPermission;
 use App\Http\Requests\OperationsRequest;
 use App\Models\Attendance\BiometricDevice;
 use Illuminate\Validation\Rule;
 
 class EnrollDeviceUserRequest extends OperationsRequest
 {
+    protected function permission(): TeamPermission
+    {
+        return TeamPermission::ManageDevices;
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {

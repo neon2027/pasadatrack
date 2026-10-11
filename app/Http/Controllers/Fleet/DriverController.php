@@ -27,7 +27,7 @@ class DriverController extends Controller
         return Inertia::render('fleet/masters', [
             'kind' => 'drivers', 'title' => 'Drivers', 'description' => 'Keep driver details current and retain their driving history.',
             'records' => $records, 'filters' => $filters,
-            'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations),
+            'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageFleet),
         ]);
     }
 

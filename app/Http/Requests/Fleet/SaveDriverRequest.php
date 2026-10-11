@@ -2,11 +2,17 @@
 
 namespace App\Http\Requests\Fleet;
 
+use App\Enums\TeamPermission;
 use App\Http\Requests\OperationsRequest;
 use Illuminate\Validation\Rule;
 
 class SaveDriverRequest extends OperationsRequest
 {
+    protected function permission(): TeamPermission
+    {
+        return TeamPermission::ManageFleet;
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {

@@ -45,7 +45,7 @@ class CollectionController extends Controller
                     'reversed' => $payment->reversal !== null, 'reversal_reason' => $payment->reversal?->reason,
                 ]),
             'drivers' => Driver::forTeam($current_team)->orderBy('name')->get(['id', 'name']),
-            'filters' => $filters, 'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations),
+            'filters' => $filters, 'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageCollections),
             'canReverse' => $request->user()->hasTeamPermission($current_team, TeamPermission::ReversePayment),
         ]);
     }

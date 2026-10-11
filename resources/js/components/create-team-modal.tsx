@@ -1,8 +1,8 @@
-import { Form } from '@inertiajs/react';
-import type { PropsWithChildren } from 'react';
-import { useState } from 'react';
-import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
+import { Form, usePage } from "@inertiajs/react";
+import type { PropsWithChildren } from "react";
+import { useState } from "react";
+import InputError from "@/components/input-error";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogClose,
@@ -12,13 +12,14 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { store } from '@/routes/teams';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { store } from "@/routes/teams";
 
 export default function CreateTeamModal({ children }: PropsWithChildren) {
     const [open, setOpen] = useState(false);
+    const { teamQuota } = usePage().props;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -35,10 +36,17 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
                             <DialogHeader>
                                 <DialogTitle>Create a new team</DialogTitle>
                                 <DialogDescription>
-                                    Create a new team to collaborate with
-                                    others.
+                                    Create a new team to collaborate with others.
                                 </DialogDescription>
                             </DialogHeader>
+                            {teamQuota && (
+                                <p className="text-sm text-muted-foreground">
+                                    {teamQuota.level}: {teamQuota.owned} of {teamQuota.limit} owned
+                                    teams, including your personal team.
+                                    {!teamQuota.canCreate &&
+                                        " Ask an administrator to upgrade your level before creating another team."}
+                                </p>
+                            )}
 
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Team name</Label>
@@ -60,7 +68,7 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
                                 <Button
                                     type="submit"
                                     data-test="create-team-submit"
-                                    disabled={processing}
+                                    disabled={processing || !teamQuota?.canCreate}
                                 >
                                     Create team
                                 </Button>

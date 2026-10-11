@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Reports;
 use App\Actions\Reports\ExportOperationalReport;
 use App\Data\OperationsTime;
 use App\Data\Reports\OperationalReport;
+use App\Enums\TeamPermission;
 use App\Http\Controllers\Controller;
 use App\Models\Fleet\Driver;
 use App\Models\Team;
@@ -25,6 +26,7 @@ class ReportController extends Controller
         $records = new LengthAwarePaginator(array_slice($result['rows'], ($page - 1) * 15, 15), count($result['rows']), 15, $page, ['path' => $request->url(), 'query' => $request->query()]);
 
         return Inertia::render('reports/index', [
+            'canExport' => $request->user()->hasTeamPermission($current_team, TeamPermission::ExportReports),
             'rows' => $records, 'totals' => $result['totals'], 'filters' => $filters,
             'drivers' => Driver::forTeam($current_team)->orderBy('name')->get(['id', 'name']),
         ]);

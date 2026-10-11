@@ -29,7 +29,7 @@ class ProfileUpdateTest extends TestCase
             ->actingAs($user)
             ->patch(route('profile.update'), [
                 'name' => 'Test User',
-                'email' => 'test@example.com',
+                'email' => $user->email,
             ]);
 
         $response
@@ -39,8 +39,7 @@ class ProfileUpdateTest extends TestCase
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
-        $this->assertSame('test@example.com', $user->email);
-        $this->assertNull($user->email_verified_at);
+        $this->assertNotNull($user->email_verified_at);
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged()
@@ -67,8 +66,9 @@ class ProfileUpdateTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => now()->timestamp])
             ->delete(route('profile.destroy'), [
-                'password' => 'password',
+                'confirmation' => 'DELETE',
             ]);
 
         $response
@@ -79,21 +79,48 @@ class ProfileUpdateTest extends TestCase
         $this->assertNull($user->fresh());
     }
 
-    public function test_correct_password_must_be_provided_to_delete_account()
+    public function test_explicit_confirmation_must_be_provided_to_delete_account()
     {
         $user = User::factory()->create();
 
         $response = $this
             ->actingAs($user)
             ->from(route('profile.edit'))
+            ->withSession(['auth.password_confirmed_at' => now()->timestamp])
             ->delete(route('profile.destroy'), [
-                'password' => 'wrong-password',
+                'confirmation' => 'wrong-confirmation',
             ]);
 
         $response
-            ->assertSessionHasErrors('password')
+            ->assertSessionHasErrors('confirmation')
             ->assertRedirect(route('profile.edit'));
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_google_email_cannot_be_changed_through_profile_settings(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => 'Changed Name',
+            'email' => 'attacker@gmail.com',
+            'google_id' => 'attacker-id',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertSame($user->email, $user->fresh()->email);
+        $this->assertNull($user->fresh()->google_id);
+    }
+
+    public function test_account_deletion_requires_recent_google_confirmation(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => now()->subMinutes(6)->timestamp])
+            ->delete(route('profile.destroy'), ['confirmation' => 'DELETE'])
+            ->assertRedirect(route('password.confirm'));
+
+        $this->assertModelExists($user);
     }
 }

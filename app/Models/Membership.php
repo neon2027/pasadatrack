@@ -13,14 +13,29 @@ use Illuminate\Support\Carbon;
  * @property int $team_id
  * @property int $user_id
  * @property TeamRole $role
+ * @property int|null $team_access_role_id
+ * @property-read TeamAccessRole|null $accessRole
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Team $team
+ * @property-read Team|null $team
  * @property-read User $user
  */
-#[Fillable(['team_id', 'user_id', 'role'])]
+#[Fillable(['team_id', 'user_id', 'role', 'team_access_role_id'])]
 class Membership extends Pivot
 {
+    protected static function booted(): void
+    {
+        static::creating(function (self $membership): void {
+            $membership->team_access_role_id ??= TeamAccessRole::query()->where('key', $membership->role->value)->value('id');
+        });
+    }
+
+    /** @return BelongsTo<TeamAccessRole, $this> */
+    public function accessRole(): BelongsTo
+    {
+        return $this->belongsTo(TeamAccessRole::class, 'team_access_role_id');
+    }
+
     /**
      * The table associated with the model.
      *

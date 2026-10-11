@@ -44,7 +44,7 @@ class AssignmentController extends Controller
             'drivers' => Driver::forTeam($current_team)->where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'jeepneys' => Jeepney::forTeam($current_team)->where('is_active', true)->orderBy('plate_number')->get(['id', 'plate_number']),
             'routes' => Route::forTeam($current_team)->where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'filters' => $filters, 'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations),
+            'filters' => $filters, 'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageScheduling),
         ]);
     }
 
@@ -74,7 +74,7 @@ class AssignmentController extends Controller
 
     public function cancel(Request $request, Team $current_team, Assignment $assignment, ManageAssignments $action): RedirectResponse
     {
-        abort_unless($request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations), 403);
+        abort_unless($request->user()->hasTeamPermission($current_team, TeamPermission::ManageScheduling), 403);
         $data = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
         $action->cancel($current_team, $request->user(), $assignment, $data['reason']);
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Shift cancelled.']);

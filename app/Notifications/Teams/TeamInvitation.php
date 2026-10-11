@@ -45,6 +45,7 @@ class TeamInvitation extends Notification implements ShouldQueue
                 'teamName' => $team->name,
             ]))
             ->line(__('Log in and visit your dashboard to accept or decline this invitation.'))
+            ->line(__('An administrator must create your PasadaTrack account before you can sign in. An invitation does not grant platform access.'))
             ->action(
                 __('Log in'),
                 route('login', ['invitation' => $this->invitation->code]),

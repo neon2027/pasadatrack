@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\TeamRole;
 use App\Models\Team;
+use App\Models\TeamAccessRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -50,6 +51,7 @@ class UserFactory extends Factory
 
             $team->members()->attach($user, [
                 'role' => TeamRole::Owner->value,
+                'team_access_role_id' => TeamAccessRole::query()->where('key', 'owner')->value('id'),
             ]);
 
             $user->switchTeam($team);

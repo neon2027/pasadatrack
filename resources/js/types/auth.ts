@@ -12,6 +12,9 @@ export type User = {
 
 export type Auth = {
     user: User;
+    canAdminister: boolean;
+    canManageCatalog: boolean;
+    requiresGoogleConfirmation: boolean;
 };
 
 export type Passkey = {

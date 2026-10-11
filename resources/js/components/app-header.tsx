@@ -1,56 +1,54 @@
-import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, Search } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
-import { Breadcrumbs } from '@/components/breadcrumbs';
-import { TeamSwitcher } from '@/components/team-switcher';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Link, usePage } from "@inertiajs/react";
+import { LayoutGrid, Menu, Search } from "lucide-react";
+import AppLogo from "@/components/app-logo";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { TeamSwitcher } from "@/components/team-switcher";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
     NavigationMenu,
     NavigationMenuItem,
     NavigationMenuList,
     navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet';
-import { UserMenuContent } from '@/components/user-menu-content';
-import { useCurrentUrl } from '@/hooks/use-current-url';
-import { useInitials } from '@/hooks/use-initials';
-import { cn } from '@/lib/utils';
-import { dashboard } from '@/routes';
-import type { BreadcrumbItem, NavItem } from '@/types';
+} from "@/components/ui/navigation-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { UserMenuContent } from "@/components/user-menu-content";
+import { useCurrentUrl } from "@/hooks/use-current-url";
+import { useInitials } from "@/hooks/use-initials";
+import { cn } from "@/lib/utils";
+import { dashboard } from "@/routes";
+import { index as usersIndex } from "@/routes/admin/users";
+import type { BreadcrumbItem, NavItem } from "@/types";
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
 
-const activeItemStyles =
-    'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
+const activeItemStyles = "text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100";
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
     const { auth, currentTeam } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
-    const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
+    const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : "/";
 
     const mainNavItems: NavItem[] = [
         {
-            title: 'Dashboard',
+            title: "Dashboard",
             href: dashboardUrl,
             icon: LayoutGrid,
         },
     ];
+
+    if (auth.canAdminister) {
+        mainNavItems.push({ title: "Administration", href: usersIndex(), icon: LayoutGrid });
+    }
 
     return (
         <>
@@ -72,9 +70,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 side="left"
                                 className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
                             >
-                                <SheetTitle className="sr-only">
-                                    Navigation menu
-                                </SheetTitle>
+                                <SheetTitle className="sr-only">Navigation menu</SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogo />
                                 </SheetHeader>
@@ -87,25 +83,18 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                     href={item.href}
                                                     className="flex items-center space-x-2 font-medium"
                                                 >
-                                                    {item.icon && (
-                                                        <item.icon className="h-5 w-5" />
-                                                    )}
+                                                    {item.icon && <item.icon className="h-5 w-5" />}
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
                                         </div>
-
                                     </div>
                                 </div>
                             </SheetContent>
                         </Sheet>
                     </div>
 
-                    <Link
-                        href={dashboardUrl}
-                        prefetch
-                        className="flex items-center space-x-2"
-                    >
+                    <Link href={dashboardUrl} prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
@@ -122,16 +111,11 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             href={item.href}
                                             className={cn(
                                                 navigationMenuTriggerStyle(),
-                                                whenCurrentUrl(
-                                                    item.href,
-                                                    activeItemStyles,
-                                                ),
-                                                'h-9 cursor-pointer px-3',
+                                                whenCurrentUrl(item.href, activeItemStyles),
+                                                "h-9 cursor-pointer px-3",
                                             )}
                                         >
-                                            {item.icon && (
-                                                <item.icon className="mr-2 h-4 w-4" />
-                                            )}
+                                            {item.icon && <item.icon className="mr-2 h-4 w-4" />}
                                             {item.title}
                                         </Link>
                                         {isCurrentUrl(item.href) && (
@@ -155,15 +139,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className="size-10 rounded-full p-1"
-                                >
+                                <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage
-                                            src={auth.user.avatar}
-                                            alt={auth.user.name}
-                                        />
+                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>

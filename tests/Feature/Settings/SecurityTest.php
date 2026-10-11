@@ -4,7 +4,6 @@ namespace Tests\Feature\Settings;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 use Tests\TestCase;
@@ -21,9 +20,6 @@ class SecurityTest extends TestCase
             'confirm' => true,
             'confirmPassword' => true,
         ]);
-        Features::passkeys([
-            'confirmPassword' => true,
-        ]);
 
         $user = User::factory()->create();
 
@@ -32,14 +28,12 @@ class SecurityTest extends TestCase
             ->get(route('security.edit'))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('settings/security')
-                ->where('canManagePasskeys', true)
-                ->where('passkeys', [])
                 ->where('canManageTwoFactor', true)
                 ->where('twoFactorEnabled', false),
             );
     }
 
-    public function test_security_page_requires_password_confirmation_when_enabled()
+    public function test_security_page_requires_google_confirmation()
     {
         $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
@@ -70,49 +64,23 @@ class SecurityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('settings/security')
-                ->where('canManagePasskeys', false)
-                ->where('passkeys', [])
                 ->where('canManageTwoFactor', false)
                 ->missing('twoFactorEnabled')
                 ->missing('requiresConfirmation'),
             );
     }
 
-    public function test_password_can_be_updated()
+    public function test_password_updates_are_not_available(): void
     {
         $user = User::factory()->create();
+        $oldHash = $user->password;
 
-        $response = $this
-            ->actingAs($user)
-            ->from(route('security.edit'))
-            ->put(route('user-password.update'), [
-                'current_password' => 'password',
-                'password' => 'new-password',
-                'password_confirmation' => 'new-password',
-            ]);
+        $this->actingAs($user)->put('/settings/password', [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertNotFound();
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect(route('security.edit'));
-
-        $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
-    }
-
-    public function test_correct_password_must_be_provided_to_update_password()
-    {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->from(route('security.edit'))
-            ->put(route('user-password.update'), [
-                'current_password' => 'wrong-password',
-                'password' => 'new-password',
-                'password_confirmation' => 'new-password',
-            ]);
-
-        $response
-            ->assertSessionHasErrors('current_password')
-            ->assertRedirect(route('security.edit'));
+        $this->assertSame($oldHash, $user->fresh()->password);
     }
 }

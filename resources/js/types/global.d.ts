@@ -16,6 +16,8 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             currentTeam: Team | null;
             teams: Team[];
+            teamPermissions: string[];
+            teamQuota: { level: string; owned: number; limit: number; canCreate: boolean } | null;
             [key: string]: unknown;
         };
     }

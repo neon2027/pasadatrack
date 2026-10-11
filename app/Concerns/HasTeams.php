@@ -8,6 +8,7 @@ use App\Enums\TeamPermission;
 use App\Enums\TeamRole;
 use App\Models\Membership;
 use App\Models\Team;
+use App\Models\TeamAccessRole;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,12 +21,13 @@ trait HasTeams
     /**
      * Get all of the teams the user belongs to.
      *
-     * @return BelongsToMany<Team, $this>
+     * @return BelongsToMany<Team, $this, Membership, 'pivot'>
      */
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_members', 'user_id', 'team_id')
-            ->withPivot(['role'])
+            ->using(Membership::class)
+            ->withPivot(['role', 'team_access_role_id'])
             ->withTimestamps();
     }
 
@@ -122,10 +124,7 @@ trait HasTeams
      */
     public function teamRole(Team $team): ?TeamRole
     {
-        return $this->teamMemberships()
-            ->where('team_id', $team->id)
-            ->first()
-            ?->role;
+        return $this->membershipForTeam($team)?->role;
     }
 
     /**
@@ -136,6 +135,7 @@ trait HasTeams
     public function toUserTeams(bool $includeCurrent = false): Collection
     {
         return $this->teams()
+            ->with(['memberships' => fn ($query) => $query->where('user_id', $this->id)->with('accessRole')])
             ->get()
             ->map(fn (Team $team) => ! $includeCurrent && $this->isCurrentTeam($team) ? null : $this->toUserTeam($team))
             ->filter()
@@ -147,15 +147,17 @@ trait HasTeams
      */
     public function toUserTeam(Team $team): UserTeam
     {
-        $role = $this->teamRole($team);
+        $membership = $this->membershipForTeam($team);
+        $role = $membership?->role;
+        $accessRole = $membership?->accessRole;
 
         return new UserTeam(
             id: $team->id,
             name: $team->name,
             slug: $team->slug,
             isPersonal: $team->is_personal,
-            role: $role?->value,
-            roleLabel: $role?->label(),
+            role: $accessRole->key ?? $role?->value,
+            roleLabel: $accessRole->name ?? $role?->label(),
             isCurrent: $this->isCurrentTeam($team),
         );
     }
@@ -165,16 +167,16 @@ trait HasTeams
      */
     public function toTeamPermissions(Team $team): TeamPermissions
     {
-        $role = $this->teamRole($team);
+        $role = $this->teamAccessRole($team);
 
         return new TeamPermissions(
-            canUpdateTeam: $role?->hasPermission(TeamPermission::UpdateTeam) ?? false,
-            canDeleteTeam: $role?->hasPermission(TeamPermission::DeleteTeam) ?? false,
-            canAddMember: $role?->hasPermission(TeamPermission::AddMember) ?? false,
-            canUpdateMember: $role?->hasPermission(TeamPermission::UpdateMember) ?? false,
-            canRemoveMember: $role?->hasPermission(TeamPermission::RemoveMember) ?? false,
-            canCreateInvitation: $role?->hasPermission(TeamPermission::CreateInvitation) ?? false,
-            canCancelInvitation: $role?->hasPermission(TeamPermission::CancelInvitation) ?? false,
+            canUpdateTeam: $role?->allows(TeamPermission::UpdateTeam) ?? false,
+            canDeleteTeam: $role?->allows(TeamPermission::DeleteTeam) ?? false,
+            canAddMember: $role?->allows(TeamPermission::AddMember) ?? false,
+            canUpdateMember: $role?->allows(TeamPermission::UpdateMember) ?? false,
+            canRemoveMember: $role?->allows(TeamPermission::RemoveMember) ?? false,
+            canCreateInvitation: $role?->allows(TeamPermission::CreateInvitation) ?? false,
+            canCancelInvitation: $role?->allows(TeamPermission::CancelInvitation) ?? false,
         );
     }
 
@@ -191,6 +193,39 @@ trait HasTeams
      */
     public function hasTeamPermission(Team $team, TeamPermission $permission): bool
     {
-        return $this->teamRole($team)?->hasPermission($permission) ?? false;
+        return $this->isActive() && ($this->teamAccessRole($team)?->allows($permission) ?? false);
+    }
+
+    public function teamAccessRole(Team $team): ?TeamAccessRole
+    {
+        return $this->membershipForTeam($team)?->accessRole;
+    }
+
+    private function membershipForTeam(Team $team): ?Membership
+    {
+        if ($this->relationLoaded('teamMemberships')) {
+            return $this->teamMemberships->firstWhere('team_id', $team->id);
+        }
+        if ($team->relationLoaded('memberships')) {
+            return $team->memberships->firstWhere('user_id', $this->id);
+        }
+
+        return $this->teamMemberships()->with('accessRole')->where('team_id', $team->id)->first();
+    }
+
+    public function canAssignTeamRole(Team $team, TeamAccessRole $role): bool
+    {
+        $ownRole = $this->teamAccessRole($team);
+
+        return $this->isActive() && $ownRole !== null && ! $role->is_archived && ! $role->is_owner
+            && ($ownRole->is_owner || array_diff($role->permissions, $ownRole->permissions) === []);
+    }
+
+    /** @return array<array{value: string, label: string}> */
+    public function assignableTeamRoles(Team $team): array
+    {
+        return TeamAccessRole::query()->where('is_archived', false)->where('is_owner', false)->orderBy('name')->get()
+            ->filter(fn (TeamAccessRole $role): bool => $this->canAssignTeamRole($team, $role))
+            ->map(fn (TeamAccessRole $role): array => ['value' => $role->key, 'label' => $role->name])->values()->all();
     }
 }

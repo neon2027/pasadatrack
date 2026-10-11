@@ -32,12 +32,12 @@ export const pesos = (value: string) => new Intl.NumberFormat('en-PH', { style: 
 export const localTime = (value: string | null) => value ? value.replace('T', ' ') : 'Open session';
 export const choices = (items: { id: number; name: string }[]): Choice[] => items.map((item) => ({ value: String(item.id), label: item.name }));
 
-export function Workspace({ title, description, action, children }: { title: string; description: string; action?: ReactNode; children: ReactNode }) {
+export function Workspace({ title, description, action, children, area = 'Operations' }: { title: string; description: string; action?: ReactNode; children: ReactNode; area?: string }) {
     return <>
         <Head title={title} />
         <div className="flex flex-col gap-6 p-4 md:p-6">
             <header className="flex flex-wrap items-start justify-between gap-4 border-b pb-5">
-                <div><p className="mb-1 text-xs font-semibold tracking-widest text-muted-foreground uppercase">PasadaTrack · Operations</p>
+                <div><p className="mb-1 text-xs font-semibold tracking-widest text-muted-foreground uppercase">PasadaTrack · {area}</p>
                     <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
                     <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p></div>
                 {action}
@@ -130,7 +130,7 @@ export function OperationsForm({ title, description, fields, initial = {}, actio
                 <DialogDescription>{discard ? 'Your changes have not been saved.' : description}</DialogDescription></DialogHeader>
             {discard ? <DialogFooter><Button autoFocus variant="outline" onClick={() => setDiscard(false)}>Keep editing</Button><Button variant="destructive" onClick={close}>Discard changes</Button></DialogFooter>
             : reviewing ? <>
-                <dl className="grid gap-3 rounded-md border p-4 text-sm">{fields.map((field) => <div key={field.name} className="grid grid-cols-2 gap-3"><dt className="text-muted-foreground">{field.label}</dt><dd className="break-words font-medium">{field.options?.find((option) => option.value === form.data[field.name])?.label ?? String(form.data[field.name] || '—')}</dd></div>)}</dl>
+                <dl className="grid gap-3 rounded-md border p-4 text-sm">{fields.map((field) => <div key={field.name} className="grid grid-cols-2 gap-3"><dt className="text-muted-foreground">{field.label}</dt><dd className="break-words font-medium">{field.type === 'checkbox' ? (form.data[field.name] ? 'Enabled' : 'Disabled') : field.options?.find((option) => option.value === form.data[field.name])?.label ?? String(form.data[field.name] || '—')}</dd></div>)}</dl>
                 <DialogFooter><Button variant="outline" onClick={() => setReviewing(false)} disabled={form.processing}>Back</Button><Button onClick={send} disabled={form.processing} aria-busy={form.processing}>{saveLabel}</Button></DialogFooter>
             </> : <form noValidate className="grid gap-5" onSubmit={(event) => {
                 event.preventDefault();

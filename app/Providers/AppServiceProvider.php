@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enums\PlatformRole;
 use App\Models\Attendance\AttendanceSession;
 use App\Models\Attendance\BiometricDevice;
 use App\Models\Attendance\BiometricDeviceUser;
@@ -13,9 +14,11 @@ use App\Models\Fleet\TeamScopedModel;
 use App\Models\Scheduling\Assignment;
 use App\Models\Scheduling\VehicleUnavailability;
 use App\Models\Team;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -35,6 +38,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('manage-platform-catalog', function (User $user): bool {
+            $current = User::query()->find($user->id);
+
+            return $current?->isActive() && $current->platform_role === PlatformRole::SuperAdmin;
+        });
         foreach ([
             'driver' => Driver::class,
             'jeepney' => Jeepney::class,

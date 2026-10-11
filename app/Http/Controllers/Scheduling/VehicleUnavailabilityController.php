@@ -26,7 +26,7 @@ class VehicleUnavailabilityController extends Controller
 
     public function destroy(Request $request, Team $current_team, VehicleUnavailability $unavailability, RecordAuditEntry $audit): RedirectResponse
     {
-        abort_unless($request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations), 403);
+        abort_unless($request->user()->hasTeamPermission($current_team, TeamPermission::ManageScheduling), 403);
         DB::transaction(function () use ($request, $current_team, $unavailability, $audit): void {
             Team::query()->whereKey($current_team->id)->lockForUpdate()->firstOrFail();
             $before = $unavailability->attributesToArray();

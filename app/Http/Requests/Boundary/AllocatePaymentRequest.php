@@ -2,10 +2,16 @@
 
 namespace App\Http\Requests\Boundary;
 
+use App\Enums\TeamPermission;
 use App\Http\Requests\OperationsRequest;
 
 class AllocatePaymentRequest extends OperationsRequest
 {
+    protected function permission(): TeamPermission
+    {
+        return TeamPermission::ManageCollections;
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {

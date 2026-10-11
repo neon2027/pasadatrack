@@ -13,6 +13,9 @@ trait GeneratesUniqueTeamSlugs
     protected static function generateUniqueTeamSlug(string $name, ?int $excludeId = null): string
     {
         $defaultSlug = Str::slug($name);
+        if ($defaultSlug === 'admin') {
+            $defaultSlug = 'admin-team';
+        }
 
         $query = static::withTrashed()
             ->where(function ($query) use ($defaultSlug) {

@@ -7,6 +7,11 @@ use App\Http\Requests\OperationsRequest;
 
 class ReversePaymentRequest extends OperationsRequest
 {
+    protected function permission(): TeamPermission
+    {
+        return TeamPermission::ReversePayment;
+    }
+
     public function authorize(): bool
     {
         return $this->user()?->hasTeamPermission($this->team(), TeamPermission::ReversePayment) ?? false;

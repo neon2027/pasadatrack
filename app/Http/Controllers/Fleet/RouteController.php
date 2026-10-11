@@ -27,7 +27,7 @@ class RouteController extends Controller
         return Inertia::render('fleet/masters', [
             'kind' => 'routes', 'title' => 'Routes', 'description' => 'Set destinations and the default boundary for future driving confirmations.',
             'records' => $records, 'filters' => $filters,
-            'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations),
+            'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageFleet),
         ]);
     }
 

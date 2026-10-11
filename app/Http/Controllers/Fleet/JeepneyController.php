@@ -27,7 +27,7 @@ class JeepneyController extends Controller
         return Inertia::render('fleet/masters', [
             'kind' => 'jeepneys', 'title' => 'Jeepneys', 'description' => 'Maintain your fleet and passenger capacity.',
             'records' => $records, 'filters' => $filters,
-            'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations),
+            'canManage' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageFleet),
         ]);
     }
 

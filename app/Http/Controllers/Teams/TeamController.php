@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Teams;
 
 use App\Actions\Teams\CreateTeam;
-use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\DeleteTeamRequest;
 use App\Http\Requests\Teams\SaveTeamRequest;
@@ -57,7 +56,7 @@ class TeamController extends Controller
                 'slug' => $team->slug,
                 'isPersonal' => $team->is_personal,
             ],
-            'members' => $team->members()->get()->map(function (User $member) {
+            'members' => $team->members()->with(['teamMemberships' => fn ($query) => $query->where('team_id', $team->id)->with('accessRole')])->get()->map(function (User $member) use ($team) {
                 /** @var Membership $membership */
                 $membership = $member->getRelation('pivot');
 
@@ -66,22 +65,22 @@ class TeamController extends Controller
                     'name' => $member->name,
                     'email' => $member->email,
                     'avatar' => $member->avatar ?? null,
-                    'role' => $membership->role->value,
-                    'role_label' => $membership->role->label(),
+                    'role' => $member->teamAccessRole($team)->key ?? $membership->role->value,
+                    'role_label' => $member->teamAccessRole($team)->name ?? $membership->role->label(),
                 ];
             }),
-            'invitations' => $team->invitations()
+            'invitations' => $team->invitations()->with('accessRole')
                 ->whereNull('accepted_at')
                 ->get()
                 ->map(fn ($invitation) => [
                     'code' => $invitation->code,
                     'email' => $invitation->email,
-                    'role' => $invitation->role->value,
-                    'role_label' => $invitation->role->label(),
+                    'role' => $invitation->accessRole->key ?? $invitation->role->value,
+                    'role_label' => $invitation->accessRole->name ?? $invitation->role->label(),
                     'created_at' => $invitation->created_at->toISOString(),
                 ]),
             'permissions' => $user->toTeamPermissions($team),
-            'availableRoles' => TeamRole::assignable(),
+            'availableRoles' => $user->assignableTeamRoles($team),
         ]);
     }
 

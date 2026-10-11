@@ -2,10 +2,16 @@
 
 namespace App\Http\Requests\Scheduling;
 
+use App\Enums\TeamPermission;
 use App\Http\Requests\OperationsRequest;
 
 class SaveAssignmentRequest extends OperationsRequest
 {
+    protected function permission(): TeamPermission
+    {
+        return TeamPermission::ManageScheduling;
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {

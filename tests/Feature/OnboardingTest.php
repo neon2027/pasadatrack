@@ -12,11 +12,11 @@ class OnboardingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_first_workspace_visit_after_login_offers_the_tutorial(): void
+    public function test_first_authenticated_workspace_visit_offers_the_tutorial(): void
     {
         $user = User::factory()->create();
 
-        $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password']);
+        $this->actingAs($user);
 
         $this->get(route('dashboard', $user->currentTeam))
             ->assertOk()

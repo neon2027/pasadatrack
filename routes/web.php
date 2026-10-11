@@ -14,32 +14,53 @@ use App\Http\Controllers\Scheduling\AssignmentController;
 use App\Http\Controllers\Scheduling\VehicleUnavailabilityController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Middleware\EnsureTeamMembership;
+use App\Http\Middleware\EnsureTeamPermission;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 Route::inertia('/terms-and-conditions', 'terms-and-conditions')->name('terms');
 Route::inertia('/privacy-policy', 'privacy-policy')->name('privacy');
 
+require __DIR__.'/admin.php';
+
 Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
-        Route::middleware(EnsureTeamMembership::class.':owner')->group(function () {
-            Route::resource('drivers', DriverController::class)->only(['index', 'store', 'update']);
-            Route::resource('jeepneys', JeepneyController::class)->only(['index', 'store', 'update']);
-            Route::resource('routes', RouteController::class)->only(['index', 'store', 'update']);
-            Route::resource('assignments', AssignmentController::class)->only(['index', 'store', 'update']);
+        $permissionMiddleware = EnsureTeamPermission::class;
+        foreach (['drivers' => DriverController::class, 'jeepneys' => JeepneyController::class, 'routes' => RouteController::class] as $resource => $controller) {
+            Route::middleware($permissionMiddleware.':fleet:view')->group(function () use ($resource, $controller): void {
+                Route::resource($resource, $controller)->only('index');
+            });
+            Route::middleware($permissionMiddleware.':fleet:manage')->group(function () use ($resource, $controller): void {
+                Route::resource($resource, $controller)->only(['store', 'update']);
+            });
+        }
+        Route::middleware($permissionMiddleware.':scheduling:view')->group(function (): void {
+            Route::resource('assignments', AssignmentController::class)->only('index');
+        });
+        Route::middleware($permissionMiddleware.':scheduling:manage')->group(function (): void {
+            Route::resource('assignments', AssignmentController::class)->only(['store', 'update']);
             Route::post('assignments/{assignment}/confirm', [AssignmentController::class, 'confirm'])->name('assignments.confirm');
             Route::post('assignments/{assignment}/cancel', [AssignmentController::class, 'cancel'])->name('assignments.cancel');
             Route::post('unavailabilities', [VehicleUnavailabilityController::class, 'store'])->name('unavailabilities.store');
             Route::delete('unavailabilities/{unavailability}', [VehicleUnavailabilityController::class, 'destroy'])->name('unavailabilities.destroy');
-            Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
+        });
+        Route::get('collections', [CollectionController::class, 'index'])->middleware($permissionMiddleware.':collections:view')->name('collections.index');
+        Route::middleware($permissionMiddleware.':collections:manage')->group(function (): void {
             Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
             Route::post('payments/{payment}/allocations', [CollectionController::class, 'allocate'])->name('collections.allocate');
-            Route::post('payments/{payment}/reversal', [CollectionController::class, 'reverse'])->name('collections.reverse');
             Route::post('obligations/{obligation}/adjustments', [CollectionController::class, 'adjust'])->name('collections.adjust');
-            Route::resource('attendance', AttendanceController::class)->only(['index', 'store', 'update']);
+        });
+        Route::post('payments/{payment}/reversal', [CollectionController::class, 'reverse'])->middleware($permissionMiddleware.':payment:reverse')->name('collections.reverse');
+        Route::middleware($permissionMiddleware.':attendance:view')->group(function (): void {
+            Route::resource('attendance', AttendanceController::class)->only('index');
+        });
+        Route::middleware($permissionMiddleware.':attendance:manage')->group(function (): void {
+            Route::resource('attendance', AttendanceController::class)->only(['store', 'update']);
+        });
+        Route::middleware($permissionMiddleware.':attendance-devices:manage')->group(function (): void {
             Route::get('attendance-devices', [BiometricDeviceController::class, 'index'])->name('devices.index');
             Route::post('attendance-devices', [BiometricDeviceController::class, 'store'])->name('devices.store');
             Route::patch('attendance-devices/{device}', [BiometricDeviceController::class, 'update'])->name('devices.update');
@@ -47,10 +68,10 @@ Route::prefix('{current_team}')
             Route::post('attendance-devices/{device}/enrollments/{enrollment}/revoke', [BiometricDeviceController::class, 'revoke'])->name('devices.revoke');
             Route::post('attendance-devices/{device}/import', [BiometricDeviceController::class, 'import'])->middleware('throttle:30,1')->name('devices.import');
             Route::post('attendance-devices/{device}/process', [BiometricDeviceController::class, 'process'])->middleware('throttle:30,1')->name('devices.process');
-            Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-            Route::get('reports/export', [ReportController::class, 'export'])->middleware('throttle:10,1')->name('reports.export');
-            Route::get('audit', [AuditController::class, 'index'])->name('audit.index');
         });
+        Route::get('reports', [ReportController::class, 'index'])->middleware($permissionMiddleware.':reports:view')->name('reports.index');
+        Route::get('reports/export', [ReportController::class, 'export'])->middleware([$permissionMiddleware.':reports:export', 'throttle:10,1'])->name('reports.export');
+        Route::get('audit', [AuditController::class, 'index'])->middleware($permissionMiddleware.':audit:view')->name('audit.index');
     });
 
 Route::middleware(['auth'])->group(function () {
@@ -59,4 +80,5 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
 });
 
+require __DIR__.'/auth.php';
 require __DIR__.'/settings.php';

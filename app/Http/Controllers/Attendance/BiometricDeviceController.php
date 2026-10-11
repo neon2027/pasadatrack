@@ -105,7 +105,7 @@ class BiometricDeviceController extends Controller
 
     public function process(Request $request, Team $current_team, BiometricDevice $device, ImportBiometricEvents $action): RedirectResponse
     {
-        abort_unless($request->user()->hasTeamPermission($current_team, TeamPermission::ManageOperations), 403);
+        abort_unless($request->user()->hasTeamPermission($current_team, TeamPermission::ManageDevices), 403);
         $action->processPending($current_team, $request->user(), $device);
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Pending scans processed.']);
 
